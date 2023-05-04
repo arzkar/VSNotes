@@ -1,0 +1,79 @@
+{
+  "name": "vsnotes",
+  "displayName": "VSNotes",
+  "description": "A tool to organize notes by projects",
+  "version": "0.1.0",
+  "publisher": "arbaaz-laskar",
+  "author": {
+    "name": "Arbaaz Laskar",
+    "email": "arzkar.dev@gmail.com"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arzkar/VSNotes"
+  },
+  "engines": {
+    "vscode": "^1.72.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "vsnotes",
+    "notes",
+    "note taking",
+    "productivity",
+    "note"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vsnotes-container",
+          "title": "%vsnotes.activitybar.title%",
+          "icon": "resources/vsnotes-icon.png"
+        }
+      ]
+    },
+    "views": {
+      "vsnotes-container": [
+        {
+          "id": "vsnotes-container",
+          "name": "%vsnotes.container.name%"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "vsnotes.test",
+        "title": "Test"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.78.0",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@typescript-eslint/eslint-plugin": "^5.59.1",
+    "@typescript-eslint/parser": "^5.59.1",
+    "eslint": "^8.39.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^5.0.4",
+    "@vscode/test-electron": "^2.3.0"
+  }
+}
