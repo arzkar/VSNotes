@@ -12,13 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import * as vscode from 'vscode';
-import { TreeDataProvider } from './tree';
-  
-export function activate(context: vscode.ExtensionContext) {
-	vscode.window.registerTreeDataProvider(
-		"vsnotes-container",
-		new TreeDataProvider()
-	  );
-}
+import { initWorkspaceConfig, initVSNotesConfig } from './util';
 
-export function deactivate() {}
+export class TreeDataProvider {
+	notes: { title: string; content: string; }[]=[];
+	constructor() {
+		const vsnotesConfig = initWorkspaceConfig();
+		if (vsnotesConfig.workspacePath) {
+			initVSNotesConfig(vsnotesConfig);
+		}
+	}
+  
+	getTreeItem(note: any ) {
+	  return {
+		id: note.title,
+		label: note.title,
+		collapsibleState: vscode.TreeItemCollapsibleState.None,
+		command: {
+		  title: "Open Note",
+		  command: "vsnotes.viewNote",
+		  arguments: [note],
+		},
+	  };
+	}
+  
+	getChildren() {
+	  return Promise.resolve(this.notes);
+	}
+}

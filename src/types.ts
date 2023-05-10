@@ -11,14 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import * as vscode from 'vscode';
-import { TreeDataProvider } from './tree';
-  
-export function activate(context: vscode.ExtensionContext) {
-	vscode.window.registerTreeDataProvider(
-		"vsnotes-container",
-		new TreeDataProvider()
-	  );
+export interface VSNotesConfig {
+    workspacePath: string,
+    workspaceID: string
 }
-
-export function deactivate() {}
