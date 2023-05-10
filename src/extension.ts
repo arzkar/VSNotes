@@ -13,12 +13,38 @@
 // limitations under the License.
 import * as vscode from 'vscode';
 import { TreeDataProvider } from './tree';
+import { constructNoteFilePath, saveNoteContent } from './util';
+import { match } from 'assert';
   
 export function activate(context: vscode.ExtensionContext) {
 	vscode.window.registerTreeDataProvider(
 		"vsnotes-container",
 		new TreeDataProvider()
 	  );
+
+	  let disposable = vscode.commands.registerCommand('extension.createNote', () => {
+		vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
+	  });
+	
+	  let saveDisposable = vscode.commands.registerCommand('extension.saveNote', () => {
+		const editor = vscode.window.activeTextEditor;
+		if (editor) {
+			if (!editor.document.fileName.startsWith("Untitled")) {
+				saveNoteContent(editor.document, editor.document.fileName);
+			}
+			else {
+				vscode.window.showInputBox({ prompt: 'Enter the note name:' }).then((noteName: string="untitled") => {
+					if (noteName != "untitled") {
+						const noteFile = noteName + ".md"
+						saveNoteContent(editor.document, constructNoteFilePath(noteFile));
+					}
+				})
+
+			}
+		}
+	  });
+	
+	  context.subscriptions.push(disposable, saveDisposable);
 }
 
 export function deactivate() {}

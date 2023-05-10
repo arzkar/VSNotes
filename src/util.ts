@@ -30,6 +30,12 @@ export function generateWorkspaceID(length: number): string {
     return result;
 }
 
+function getExtensionNotesPath() {
+    const extensionId: any | undefined = vscode.extensions.getExtension('arbaaz-laskar.vsnotes');
+    const extensionNotesPath: string = path.join(vscode.env.appRoot, 'extensions', extensionId.id, "notes");
+    return extensionNotesPath;
+}
+
 export function initWorkspaceConfig() {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     let workspacePath = "";
@@ -67,8 +73,7 @@ export function initWorkspaceConfig() {
 }
 
 export function initVSNotesConfig(vsnotesConfig: VSNotesConfig){
-    const extensionId: any | undefined = vscode.extensions.getExtension('arbaaz-laskar.vsnotes');
-    const extensionNotesPath: string = path.join(vscode.env.appRoot, 'extensions', extensionId.id, "notes");
+    const extensionNotesPath = getExtensionNotesPath()
     const dirList = [extensionNotesPath, path.join(extensionNotesPath, vsnotesConfig.workspaceID)];
     dirList.forEach((dir)=> {
         if (!fs.existsSync(dir)) {
@@ -77,4 +82,33 @@ export function initVSNotesConfig(vsnotesConfig: VSNotesConfig){
         }
     });
     insertOrUpdateDb(vsnotesConfig, extensionNotesPath)
+}
+
+export function saveNoteContent(document: vscode.TextDocument, noteFilePath: string) {
+    try {
+        fs.writeFileSync(noteFilePath, Buffer.from(document.getText(), 'utf8'),{ flag: 'w' });
+        document.save().then(() => {
+            vscode.window.showInformationMessage('Note saved successfully.');
+            vscode.commands.executeCommand('workbench.action.closeActiveEditor', { force: true });
+            vscode.workspace.openTextDocument(noteFilePath).then((document) => {
+                vscode.window.showTextDocument(document);
+            });
+        });
+        // vscode.window.showInformationMessage('Note saved successfully.');
+        // vscode.commands.executeCommand('workbench.action.closeActiveEditor', { force: true});
+        // vscode.workspace.openTextDocument(noteFilePath).then((document) => {
+        //     vscode.window.showTextDocument(document);
+        // });
+        // vscode.commands.executeCommand('workbench.action.files.save', { force: true });
+        // vscode.commands.executeCommand('workbench.action.files.revert', { force: true });
+
+    } catch (err: any) {
+        vscode.window.showErrorMessage(`Failed to save note: ${err.message}`);
+    }
+}
+
+export function constructNoteFilePath(noteFile: string) {
+    const vsnotesConfig = initWorkspaceConfig();
+    const extensionNotesPath = getExtensionNotesPath()
+    return path.join(extensionNotesPath, vsnotesConfig.workspaceID, noteFile);
 }

@@ -15,7 +15,7 @@ import * as vscode from 'vscode';
 import { initWorkspaceConfig, initVSNotesConfig } from './util';
 
 export class TreeDataProvider {
-	notes: { title: string; content: string; }[]=[];
+	notes: { title: string; content: string;}[]=[];
 	constructor() {
 		const vsnotesConfig = initWorkspaceConfig();
 		if (vsnotesConfig.workspacePath) {

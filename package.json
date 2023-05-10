@@ -50,8 +50,22 @@
     },
     "commands": [
       {
-        "command": "vsnotes.test",
-        "title": "Test"
+        "command": "extension.openNote",
+        "title": "VSNotes: Open Note"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "extension.createNote",
+        "key": "ctrl+n",
+        "mac": "cmd+n",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "extension.saveNote",
+        "key": "ctrl+s",
+        "mac": "cmd+s",
+        "when": "editorTextFocus && !editorReadonly"
       }
     ]
   },
