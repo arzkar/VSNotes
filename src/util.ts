@@ -30,7 +30,7 @@ export function generateWorkspaceID(length: number): string {
     return result;
 }
 
-function getExtensionNotesPath() {
+export function getExtensionNotesPath() {
     const extensionId: any | undefined = vscode.extensions.getExtension('arbaaz-laskar.vsnotes');
     const extensionNotesPath: string = path.join(vscode.env.appRoot, 'extensions', extensionId.id, "notes");
     return extensionNotesPath;
@@ -50,7 +50,7 @@ export function initWorkspaceConfig() {
         fs.mkdirSync(workspaceConfigDir, { recursive: true });
     }
     if (!fs.existsSync(workspaceVSNotesConfig)) {
-        console.log(`${workspaceVSNotesConfig} not found! Writing!`)
+        console.log(`${workspaceVSNotesConfig} not found! Writing!`);
         const vsnotesConfig: VSNotesConfig = {
             workspacePath: workspacePath,
             workspaceID: generateWorkspaceID(16)
@@ -58,30 +58,30 @@ export function initWorkspaceConfig() {
         try {
             fs.writeFileSync(workspaceVSNotesConfig, JSON.stringify(vsnotesConfig, null, 2));
         } catch (err: any) {
-            console.log(`Error writing ${workspaceVSNotesConfig}:` + err.message)
+            console.log(`Error writing ${workspaceVSNotesConfig}:` + err.message);
         }
         return vsnotesConfig;
     }
     else {
-        console.log(`${workspaceVSNotesConfig} found! Reading!`)
-        let localWorkspaceVSNotesConfig: VSNotesConfig = JSON.parse(fs.readFileSync(workspaceVSNotesConfig, 'utf-8'))
+        console.log(`${workspaceVSNotesConfig} found! Reading!`);
+        let localWorkspaceVSNotesConfig: VSNotesConfig = JSON.parse(fs.readFileSync(workspaceVSNotesConfig, 'utf-8'));
         if (localWorkspaceVSNotesConfig.workspacePath != workspacePath) {
-            localWorkspaceVSNotesConfig.workspacePath = workspacePath
+            localWorkspaceVSNotesConfig.workspacePath = workspacePath;
         }
         return localWorkspaceVSNotesConfig;
     }
 }
 
 export function initVSNotesConfig(vsnotesConfig: VSNotesConfig){
-    const extensionNotesPath = getExtensionNotesPath()
+    const extensionNotesPath = getExtensionNotesPath();
     const dirList = [extensionNotesPath, path.join(extensionNotesPath, vsnotesConfig.workspaceID)];
     dirList.forEach((dir)=> {
         if (!fs.existsSync(dir)) {
-            console.log(`${dir} not found! Writing!`)
+            console.log(`${dir} not found! Writing!`);
           fs.mkdirSync(dir, { recursive: true });
         }
     });
-    insertOrUpdateDb(vsnotesConfig, extensionNotesPath)
+    insertOrUpdateDb(vsnotesConfig, extensionNotesPath);
 }
 
 export function saveNoteContent(document: vscode.TextDocument, noteFilePath: string) {
@@ -93,15 +93,8 @@ export function saveNoteContent(document: vscode.TextDocument, noteFilePath: str
             vscode.workspace.openTextDocument(noteFilePath).then((document) => {
                 vscode.window.showTextDocument(document);
             });
+            vscode.commands.executeCommand('workbench.action.files.revert', { force: true });
         });
-        // vscode.window.showInformationMessage('Note saved successfully.');
-        // vscode.commands.executeCommand('workbench.action.closeActiveEditor', { force: true});
-        // vscode.workspace.openTextDocument(noteFilePath).then((document) => {
-        //     vscode.window.showTextDocument(document);
-        // });
-        // vscode.commands.executeCommand('workbench.action.files.save', { force: true });
-        // vscode.commands.executeCommand('workbench.action.files.revert', { force: true });
-
     } catch (err: any) {
         vscode.window.showErrorMessage(`Failed to save note: ${err.message}`);
     }
@@ -109,6 +102,6 @@ export function saveNoteContent(document: vscode.TextDocument, noteFilePath: str
 
 export function constructNoteFilePath(noteFile: string) {
     const vsnotesConfig = initWorkspaceConfig();
-    const extensionNotesPath = getExtensionNotesPath()
+    const extensionNotesPath = getExtensionNotesPath();
     return path.join(extensionNotesPath, vsnotesConfig.workspaceID, noteFile);
 }

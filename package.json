@@ -43,7 +43,7 @@
     "views": {
       "vsnotes-container": [
         {
-          "id": "vsnotes-container",
+          "id": "vsnotes-FileView",
           "name": "%vsnotes.container.name%"
         }
       ]
