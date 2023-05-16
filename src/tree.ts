@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import * as vscode from "vscode";
+import * as path from "path";
 
 class FileItem {
   constructor(public readonly name: string, public readonly filePath: string) {}
@@ -19,14 +20,17 @@ class FileItem {
 
 export class FileTreeDataProvider implements vscode.TreeDataProvider<FileItem> {
   private fileItems: FileItem[] = [];
-  private rootPath: string;
+  private extensionNotesPath: string;
+  private workspaceID: string;
   private _onDidChangeTreeData: vscode.EventEmitter<FileItem | undefined> =
     new vscode.EventEmitter<FileItem | undefined>();
-  readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+  readonly onDidChangeTreeData: vscode.Event<FileItem | undefined> =
+    this._onDidChangeTreeData.event;
   private timer: NodeJS.Timer | undefined;
 
-  constructor(rootPath: string) {
-    this.rootPath = rootPath;
+  constructor(extensionNotesPath: string, workspaceID: string) {
+    this.extensionNotesPath = extensionNotesPath;
+    this.workspaceID = workspaceID;
     this.startDirectoryScan();
   }
 
@@ -49,13 +53,13 @@ export class FileTreeDataProvider implements vscode.TreeDataProvider<FileItem> {
 
   async getChildren(element?: FileItem): Promise<FileItem[]> {
     const files = await vscode.workspace.fs.readDirectory(
-      vscode.Uri.file(this.rootPath)
+      vscode.Uri.file(path.join(this.extensionNotesPath, this.workspaceID))
     );
     const fileItems: FileItem[] = [];
     for (const [name, type] of files) {
       if (type === vscode.FileType.File) {
         const filePath = vscode.Uri.joinPath(
-          vscode.Uri.file(this.rootPath),
+          vscode.Uri.file(path.join(this.extensionNotesPath, this.workspaceID)),
           name
         ).fsPath;
         fileItems.push(new FileItem(name, filePath));
@@ -70,7 +74,7 @@ export class FileTreeDataProvider implements vscode.TreeDataProvider<FileItem> {
     }
     this.timer = setInterval(() => {
       this.checkForDeletedFiles();
-    }, 2000); // Adjust the interval as needed
+    }, 2000);
   }
 
   private async checkForDeletedFiles(): Promise<void> {

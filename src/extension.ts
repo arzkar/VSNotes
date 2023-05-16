@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import * as vscode from "vscode";
+import * as path from "path";
+import * as os from "os";
+
 import {
   initWorkspaceConfig,
   initVSNotesConfig,
-  getExtensionNotesPath,
   saveNoteContent,
+  readFilesInDirectory,
 } from "./util";
 import { FileTreeDataProvider } from "./tree";
-import path = require("path");
 
 export function activate(context: vscode.ExtensionContext) {
   const vsnotesConfig = initWorkspaceConfig();
@@ -27,27 +29,37 @@ export function activate(context: vscode.ExtensionContext) {
     initVSNotesConfig(vsnotesConfig);
   }
 
-  const extensionNotesPath = getExtensionNotesPath();
-  const rootPath = path.join(extensionNotesPath, vsnotesConfig.workspaceID);
-  const fileDataProvider = new FileTreeDataProvider(rootPath);
-
-  vscode.window.registerTreeDataProvider(
-    "vsnotes-FileView",
-    new FileTreeDataProvider(rootPath)
+  const extensionNotesPath = path.join(os.homedir(), ".vsnotes");
+  const workspaceNotesPath = path.join(
+    extensionNotesPath,
+    vsnotesConfig.workspaceID
+  );
+  const fileDataProvider = new FileTreeDataProvider(
+    extensionNotesPath,
+    vsnotesConfig.workspaceID
   );
 
-  // Register a file system watcher to listen for file changes
-  const watcher = vscode.workspace.createFileSystemWatcher(`${rootPath}/**/*`);
-  watcher.onDidChange(() => {
-    // Refresh the data in the FileTreeDataProvider when files are modified
-    fileDataProvider.refresh();
+  vscode.window.registerTreeDataProvider("vsnotes-FileView", fileDataProvider);
+
+  vscode.workspace.onDidSaveTextDocument((document) => {
+    let savedFiles: string[] = readFilesInDirectory(workspaceNotesPath);
+    const noteFilePath = path.normalize(document.uri.fsPath);
+    const isMatch = savedFiles.some((savedFilePath) => {
+      return savedFilePath.toLowerCase() === noteFilePath.toLowerCase();
+    });
+    console.log("isMatch", isMatch);
+
+    if (!isMatch) {
+      // If new file is created, refresh the tree
+      fileDataProvider.refresh();
+    }
+    const newNoteUri = vscode.Uri.file(noteFilePath);
+    vscode.commands.executeCommand("vscode.open", newNoteUri);
   });
 
   let createNote = vscode.commands.registerCommand(
     "extension.createNote",
     () => {
-      const newWorkspaceFolders = [{ uri: vscode.Uri.file(rootPath) }];
-      vscode.workspace.updateWorkspaceFolders(0, null, ...newWorkspaceFolders);
       vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
     }
   );
@@ -57,8 +69,22 @@ export function activate(context: vscode.ExtensionContext) {
     async () => {
       const activeEditor = vscode.window.activeTextEditor;
       if (activeEditor) {
-        await vscode.commands.executeCommand("workbench.action.files.save");
-        vscode.window.showInformationMessage("Note saved successfully.");
+        await activeEditor.document.save();
+        const noteFileName = path.basename(activeEditor.document.fileName);
+        const noteFilePath = path.join(workspaceNotesPath, noteFileName);
+
+        const noteUri = vscode.Uri.file(noteFilePath);
+
+        // Update the document's URI in the editor
+        await vscode.commands.executeCommand(
+          "workbench.action.files.save",
+          noteUri
+        );
+
+        // Get the new filename
+        const newFileName = path.basename(noteUri.fsPath);
+
+        vscode.window.showInformationMessage(`Note saved!`);
       }
     }
   );
