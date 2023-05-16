@@ -57,33 +57,8 @@ export function activate(context: vscode.ExtensionContext) {
     async () => {
       const activeEditor = vscode.window.activeTextEditor;
       if (activeEditor) {
-        const filePath = activeEditor.document.uri.fsPath;
-        const newFilePath = await vscode.window.showSaveDialog({
-          defaultUri: vscode.Uri.file(rootPath),
-        });
-
-        if (newFilePath) {
-          const newFilePathStr = newFilePath.fsPath;
-          await vscode.workspace.fs.writeFile(
-            vscode.Uri.file(newFilePathStr),
-            Buffer.from(activeEditor.document.getText())
-          );
-          activeEditor.document.save().then(() => {
-            vscode.window.showInformationMessage("Note saved successfully.");
-            vscode.commands.executeCommand(
-              "workbench.action.closeActiveEditor",
-              { force: true }
-            );
-            vscode.workspace
-              .openTextDocument(newFilePathStr)
-              .then((document) => {
-                vscode.window.showTextDocument(document);
-              });
-            vscode.commands.executeCommand("workbench.action.files.revert", {
-              force: true,
-            });
-          });
-        }
+        await vscode.commands.executeCommand("workbench.action.files.save");
+        vscode.window.showInformationMessage("Note saved successfully.");
       }
     }
   );
