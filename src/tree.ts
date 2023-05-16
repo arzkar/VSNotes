@@ -14,7 +14,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
-class FileItem {
+export class FileItem {
   constructor(public readonly name: string, public readonly filePath: string) {}
 }
 
@@ -48,6 +48,7 @@ export class FileTreeDataProvider implements vscode.TreeDataProvider<FileItem> {
       title: "Open File",
       arguments: [element.filePath],
     };
+
     return treeItem;
   }
 

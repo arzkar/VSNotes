@@ -27,7 +27,10 @@
     "note"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onCommand:extension.createNote",
+    "onCommand:extension.openNote",
+    "onCommand:extension.deleteNote"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -50,8 +53,16 @@
     },
     "commands": [
       {
+        "command": "extension.createNote",
+        "title": "Create Note"
+      },
+      {
         "command": "extension.openNote",
-        "title": "VSNotes: Open Note"
+        "title": "Open Note"
+      },
+      {
+        "command": "extension.deleteNote",
+        "title": "Delete Note"
       }
     ],
     "keybindings": [
@@ -66,8 +77,46 @@
         "key": "ctrl+s",
         "mac": "cmd+s",
         "when": "editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "extension.deleteNote",
+        "key": "delete",
+        "when": "explorerViewletVisible && explorerViewletFocus && !inputFocus"
       }
-    ]
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "extension.createNote",
+          "group": "navigation",
+          "when": "explorerViewletVisible && explorerResourceIsFile"
+        },
+        {
+          "command": "extension.openNote",
+          "group": "navigation",
+          "when": "explorerViewletVisible && explorerResourceIsFile"
+        },
+        {
+          "command": "extension.deleteNote",
+          "group": "navigation",
+          "when": "explorerViewletVisible && explorerResourceIsFile"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "extension.createNote",
+          "group": "navigation"
+        },
+        {
+          "command": "extension.openNote",
+          "group": "navigation"
+        },
+        {
+          "command": "extension.deleteNote",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

@@ -20,8 +20,9 @@ import {
   initVSNotesConfig,
   saveNoteContent,
   readFilesInDirectory,
+  deleteFile,
 } from "./util";
-import { FileTreeDataProvider } from "./tree";
+import { FileItem, FileTreeDataProvider } from "./tree";
 
 export function activate(context: vscode.ExtensionContext) {
   const vsnotesConfig = initWorkspaceConfig();
@@ -47,7 +48,6 @@ export function activate(context: vscode.ExtensionContext) {
     const isMatch = savedFiles.some((savedFilePath) => {
       return savedFilePath.toLowerCase() === noteFilePath.toLowerCase();
     });
-    console.log("isMatch", isMatch);
 
     if (!isMatch) {
       // If new file is created, refresh the tree
@@ -89,16 +89,72 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  let openNote = vscode.commands.registerCommand(
-    "extension.openFile",
-    async (filePath: string) => {
-      const fileUri = vscode.Uri.file(filePath);
+  let openNoteFromExplorer = vscode.commands.registerCommand(
+    "extension.openNoteFromExplorer",
+    async (fileItem: FileItem) => {
+      const fileUri = vscode.Uri.file(fileItem.filePath);
       const document = await vscode.workspace.openTextDocument(fileUri);
-      vscode.window.showTextDocument(document);
+      await vscode.window.showTextDocument(document, {
+        preview: true,
+        preserveFocus: true,
+      });
     }
   );
 
-  context.subscriptions.push(createNote, saveNote, openNote);
-}
+  let deleteNote = vscode.commands.registerCommand(
+    "extension.deleteNote",
+    async (fileItem: FileItem) => {
+      const filePath = fileItem.filePath;
 
-export function deactivate() {}
+      // Show confirmation dialog before deleting
+      const confirmDelete = await vscode.window.showWarningMessage(
+        `Are you sure you want to delete the note '${path.basename(
+          filePath
+        )}'?`,
+        { modal: true },
+        "Delete"
+      );
+
+      if (confirmDelete === "Delete") {
+        try {
+          deleteFile(filePath);
+          vscode.window.showInformationMessage("Note deleted successfully.");
+          fileDataProvider.refresh(); // Refresh the file tree view after deletion
+        } catch (error) {
+          vscode.window.showErrorMessage(`Error deleting note: ${error}`);
+        }
+      }
+    }
+  );
+
+  context.subscriptions.push(
+    createNote,
+    saveNote,
+    openNoteFromExplorer,
+    deleteNote
+  );
+
+  // Register the explorer context menu
+  vscode.commands.registerCommand(
+    "vsnotes.openNoteFromExplorer",
+    (resource) => {
+      const fileItem = resource as FileItem;
+      vscode.commands.executeCommand(
+        "extension.openNoteFromExplorer",
+        fileItem
+      );
+    }
+  );
+
+  vscode.window.createTreeView("vsnotes-FileView", {
+    treeDataProvider: fileDataProvider,
+    showCollapseAll: true,
+    canSelectMany: false,
+    // Register the explorer context menu
+    //@ts-ignore
+    message: "Open Note",
+    //@ts-ignore
+    command: "vsnotes.openNoteFromExplorer",
+    arguments: [FileItem],
+  });
+}

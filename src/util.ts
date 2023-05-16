@@ -120,3 +120,8 @@ export function readFilesInDirectory(directory: string): string[] {
 
   return files;
 }
+
+export const deleteFile = (filePath: string) => {
+  console.log("filePath", filePath);
+  fs.unlinkSync(filePath);
+};
