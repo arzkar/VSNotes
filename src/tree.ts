@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
 class FileItem {
   constructor(public readonly name: string, public readonly filePath: string) {}
@@ -20,7 +20,8 @@ class FileItem {
 export class FileTreeDataProvider implements vscode.TreeDataProvider<FileItem> {
   private fileItems: FileItem[] = [];
   private rootPath: string;
-  private _onDidChangeTreeData: vscode.EventEmitter<FileItem | undefined> = new vscode.EventEmitter<FileItem | undefined>();
+  private _onDidChangeTreeData: vscode.EventEmitter<FileItem | undefined> =
+    new vscode.EventEmitter<FileItem | undefined>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
   private timer: NodeJS.Timer | undefined;
 
@@ -34,21 +35,29 @@ export class FileTreeDataProvider implements vscode.TreeDataProvider<FileItem> {
   }
 
   getTreeItem(element: FileItem): vscode.TreeItem {
-    const treeItem = new vscode.TreeItem(element.name);
+    const treeItem = new vscode.TreeItem(
+      element.name,
+      vscode.TreeItemCollapsibleState.None
+    );
     treeItem.command = {
-      command: 'extension.openFile',
-      title: 'Open File',
+      command: "extension.openFile",
+      title: "Open File",
       arguments: [element.filePath],
     };
     return treeItem;
   }
 
   async getChildren(element?: FileItem): Promise<FileItem[]> {
-    const files = await vscode.workspace.fs.readDirectory(vscode.Uri.file(this.rootPath));
+    const files = await vscode.workspace.fs.readDirectory(
+      vscode.Uri.file(this.rootPath)
+    );
     const fileItems: FileItem[] = [];
     for (const [name, type] of files) {
       if (type === vscode.FileType.File) {
-        const filePath = vscode.Uri.joinPath(vscode.Uri.file(this.rootPath), name).fsPath;
+        const filePath = vscode.Uri.joinPath(
+          vscode.Uri.file(this.rootPath),
+          name
+        ).fsPath;
         fileItems.push(new FileItem(name, filePath));
       }
     }
@@ -73,8 +82,9 @@ export class FileTreeDataProvider implements vscode.TreeDataProvider<FileItem> {
 
     // Compare existing files with the stored file list
     // Remove any missing files from the tree view and trigger a refresh
-    // This assumes you have a property `fileItems` in your `FileTreeDataProvider` class
-    this.fileItems = this.fileItems.filter((item) => existingFiles.has(item.filePath));
+    this.fileItems = this.fileItems.filter((item) =>
+      existingFiles.has(item.filePath)
+    );
     this.refresh();
   }
 

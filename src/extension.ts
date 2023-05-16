@@ -63,7 +63,16 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  context.subscriptions.push(createNote, saveNote);
+  let openNote = vscode.commands.registerCommand(
+    "extension.openFile",
+    async (filePath: string) => {
+      const fileUri = vscode.Uri.file(filePath);
+      const document = await vscode.workspace.openTextDocument(fileUri);
+      vscode.window.showTextDocument(document);
+    }
+  );
+
+  context.subscriptions.push(createNote, saveNote, openNote);
 }
 
 export function deactivate() {}
