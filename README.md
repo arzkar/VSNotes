@@ -1,5 +1,7 @@
 # vsnotes
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/arzkar)
+
 A tool to organize notes by workspaces.
 
 ## Features
